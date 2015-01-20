@@ -8,7 +8,7 @@ module.exports = function (str) {
 	  return ' ' + m.toLowerCase();
 	});
 
-	str = str.trim().toLowerCase().replace(/[_-]+/g, ' ').replace(/\s{2,}/g, ' ');
+	str = str.toLowerCase().replace(/[_-]+/g, ' ').replace(/\s{2,}/g, ' ').trim();
 	str = str.charAt(0).toUpperCase() + str.slice(1);
 
 	return str;
