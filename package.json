@@ -34,6 +34,9 @@
     "text",
     "convert"
   ],
+  "dependencies": {
+    "decamelize": "^1.0.0"
+  },
   "devDependencies": {
     "ava": "0.0.4"
   }
