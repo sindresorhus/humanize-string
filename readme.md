@@ -6,7 +6,7 @@
 
 ## Install
 
-```sh
+```
 $ npm install --save humanize-string
 ```
 
@@ -14,16 +14,16 @@ $ npm install --save humanize-string
 ## Usage
 
 ```js
-var humanizeString = require('humanize-string');
+const humanizeString = require('humanize-string');
 
 humanizeString('fooBar');
-//=> Foo bar
+//=> 'Foo bar'
 
 humanizeString('foo-bar');
-//=> Foo bar
+//=> 'Foo bar'
 
 humanizeString('foo_bar');
-//=> Foo bar
+//=> 'Foo bar'
 ```
 
 
