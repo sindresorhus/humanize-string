@@ -1,16 +1,14 @@
-'use strict';
-var test = require('ava');
-var hs = require('./');
+import test from 'ava';
+import m from './';
 
-test(function (t) {
-	t.assert(hs('') === '');
-	t.assert(hs('unicorns and rainbows') === 'Unicorns and rainbows');
-	t.assert(hs('unicorns-and-rainbows') === 'Unicorns and rainbows');
-	t.assert(hs('UnicornsAndRainbows') === 'Unicorns and rainbows');
-	t.assert(hs('unicornsAndRainbows') === 'Unicorns and rainbows');
-	t.assert(hs('unicorns_and_rainbows') === 'Unicorns and rainbows');
-	t.assert(hs('-UnicornsAndRainbows') === 'Unicorns and rainbows');
-	t.assert(hs('  unicorns  and  rainbows  ') === 'Unicorns and rainbows');
-	t.assert(hs('unicorns_and-Rainbows_andPonies  ') === 'Unicorns and rainbows and ponies');
-	t.end();
+test(t => {
+	t.is(m(''), '');
+	t.is(m('unicorns and rainbows'), 'Unicorns and rainbows');
+	t.is(m('unicorns-and-rainbows'), 'Unicorns and rainbows');
+	t.is(m('UnicornsAndRainbows'), 'Unicorns and rainbows');
+	t.is(m('unicornsAndRainbows'), 'Unicorns and rainbows');
+	t.is(m('unicorns_and_rainbows'), 'Unicorns and rainbows');
+	t.is(m('-UnicornsAndRainbows'), 'Unicorns and rainbows');
+	t.is(m('  unicorns  and  rainbows  '), 'Unicorns and rainbows');
+	t.is(m('unicorns_and-Rainbows_andPonies  '), 'Unicorns and rainbows and ponies');
 });
