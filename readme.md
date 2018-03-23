@@ -1,13 +1,13 @@
 # humanize-string [![Build Status](https://travis-ci.org/sindresorhus/humanize-string.svg?branch=master)](https://travis-ci.org/sindresorhus/humanize-string)
 
-> Converts a camelized/dasherized/underscored string into a humanized one  
+> Convert a camelized/dasherized/underscored string into a humanized one
 > Example: `fooBar-Baz_Faz` → `Foo bar baz faz`
 
 
 ## Install
 
 ```
-$ npm install --save humanize-string
+$ npm install humanize-string
 ```
 
 
@@ -27,6 +27,11 @@ humanizeString('foo_bar');
 ```
 
 
+## Related
+
+- [camelcase](https://github.com/sindresorhus/camelcase) - Convert a dash/dot/underscore/space separated string to camelcase
+
+
 ## License
 
-MIT © [Sindre Sorhus](http://sindresorhus.com)
+MIT © [Sindre Sorhus](https://sindresorhus.com)

@@ -1,7 +1,7 @@
 import test from 'ava';
-import m from './';
+import m from '.';
 
-test(t => {
+test('main', t => {
 	t.is(m(''), '');
 	t.is(m('unicorns and rainbows'), 'Unicorns and rainbows');
 	t.is(m('unicorns-and-rainbows'), 'Unicorns and rainbows');
