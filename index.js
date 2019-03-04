@@ -1,7 +1,7 @@
 'use strict';
 const decamelize = require('decamelize');
 
-module.exports = input => {
+const humanizeString = input => {
 	if (typeof input !== 'string') {
 		throw new TypeError('Expected a string');
 	}
@@ -12,3 +12,6 @@ module.exports = input => {
 
 	return input;
 };
+
+module.exports = humanizeString;
+module.exports.default = humanizeString;
