@@ -1,6 +1,6 @@
 {
 	"name": "humanize-string",
-	"version": "1.0.2",
+	"version": "2.0.0",
 	"description": "Convert a camelized/dasherized/underscored string into a humanized one: `fooBar-Baz_Faz` → `Foo bar baz faz`",
 	"license": "MIT",
 	"repository": "sindresorhus/humanize-string",
