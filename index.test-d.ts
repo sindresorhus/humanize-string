@@ -1,4 +1,4 @@
-import {expectType} from 'tsd-check';
-import humanizeString from '.';
+import {expectType} from 'tsd';
+import humanizeString = require('.');
 
 expectType<string>(humanizeString('fooBar'));
