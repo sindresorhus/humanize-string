@@ -14,4 +14,5 @@ const humanizeString = input => {
 };
 
 module.exports = humanizeString;
+// TODO: Remove this for the next major release
 module.exports.default = humanizeString;
