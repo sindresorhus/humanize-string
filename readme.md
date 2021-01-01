@@ -1,4 +1,4 @@
-# humanize-string [![Build Status](https://travis-ci.org/sindresorhus/humanize-string.svg?branch=master)](https://travis-ci.org/sindresorhus/humanize-string)
+# humanize-string
 
 > Convert a camelized/dasherized/underscored string into a humanized one
 > Example: `fooBar-Baz_Faz` → `Foo bar baz faz`
