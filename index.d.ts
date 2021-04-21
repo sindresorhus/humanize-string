@@ -1,3 +1,7 @@
+interface HumanizeProps { 
+	originalCase?: boolean
+}
+
 declare const humanizeString: {
 	/**
 	Convert a camelized/dasherized/underscored string into a humanized one: `fooBar-Baz_Faz` → `Foo bar baz faz`.
@@ -18,7 +22,7 @@ declare const humanizeString: {
 	//=> 'Foo bar'
 	```
 	*/
-	(text: string): string;
+	(text: string, opts: HumanizeProps): string;
 
 	// TODO: Remove this for the next major release, refactor the whole definition to:
 	// declare function humanizeString(text: string): string;
