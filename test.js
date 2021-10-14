@@ -1,5 +1,5 @@
 import test from 'ava';
-import humanizeString from '.';
+import humanizeString from './index.js';
 
 test('main', t => {
 	t.is(humanizeString(''), '');

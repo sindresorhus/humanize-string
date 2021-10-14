@@ -1,4 +1,4 @@
 import {expectType} from 'tsd';
-import humanizeString = require('.');
+import humanizeString from './index.js';
 
 expectType<string>(humanizeString('fooBar'));
