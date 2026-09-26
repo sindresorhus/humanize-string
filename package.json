@@ -5,20 +5,18 @@
 	"license": "MIT",
 	"repository": "sindresorhus/humanize-string",
 	"funding": "https://github.com/sponsors/sindresorhus",
-	"author": {
-		"name": "Sindre Sorhus",
-		"email": "sindresorhus@gmail.com",
-		"url": "https://sindresorhus.com"
-	},
+	"author": "Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)",
 	"type": "module",
-	"exports": "./index.js",
-	"types": "./index.d.ts",
+	"exports": {
+		"types": "./index.d.ts",
+		"default": "./index.js"
+	},
 	"sideEffects": false,
 	"engines": {
-		"node": "^12.20.0 || ^14.13.1 || >=16.0.0"
+		"node": ">=22"
 	},
 	"scripts": {
-		"test": "xo && ava && tsd"
+		"test": "xo && node --test"
 	},
 	"files": [
 		"index.js",
@@ -40,11 +38,9 @@
 		"convert"
 	],
 	"dependencies": {
-		"decamelize": "^6.0.0"
+		"decamelize": "^6.0.1"
 	},
 	"devDependencies": {
-		"ava": "^3.15.0",
-		"tsd": "^0.18.0",
-		"xo": "^0.45.0"
+		"xo": "^5.0.1"
 	}
 }

@@ -10,7 +10,7 @@ export default function humanizeString(string, options = {}) {
 		string = string.toLowerCase();
 	}
 
-	string = string.replace(/[_-]+/g, ' ').replace(/\s{2,}/g, ' ').trim();
+	string = string.replaceAll(/[\-_]+/gv, ' ').replaceAll(/\s{2,}/gv, ' ').trim();
 
 	// Destructuring iterates code points, where `charAt()` would split a surrogate pair and leave the first letter unuppercased.
 	const [firstCharacter = '', ...rest] = string;

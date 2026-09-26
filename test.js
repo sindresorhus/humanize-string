@@ -1,54 +1,76 @@
-import test from 'ava';
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
 import humanizeString from './index.js';
 
-test('main', t => {
-	t.is(humanizeString(''), '');
-	t.is(humanizeString('unicorns and rainbows'), 'Unicorns and rainbows');
-	t.is(humanizeString('unicorns-and-rainbows'), 'Unicorns and rainbows');
-	t.is(humanizeString('UnicornsAndRainbows'), 'Unicorns and rainbows');
-	t.is(humanizeString('unicornsAndRainbows'), 'Unicorns and rainbows');
-	t.is(humanizeString('unicorns_and_rainbows'), 'Unicorns and rainbows');
-	t.is(humanizeString('-UnicornsAndRainbows'), 'Unicorns and rainbows');
-	t.is(humanizeString('  unicorns  and  rainbows  '), 'Unicorns and rainbows');
-	t.is(humanizeString('unicorns_and-Rainbows_andPonies  '), 'Unicorns and rainbows and ponies');
+test('humanizes camelized, dasherized, and underscored input', () => {
+	assert.equal(humanizeString(''), '');
+	assert.equal(humanizeString('unicorns and rainbows'), 'Unicorns and rainbows');
+	assert.equal(humanizeString('unicorns-and-rainbows'), 'Unicorns and rainbows');
+	assert.equal(humanizeString('UnicornsAndRainbows'), 'Unicorns and rainbows');
+	assert.equal(humanizeString('unicornsAndRainbows'), 'Unicorns and rainbows');
+	assert.equal(humanizeString('unicorns_and_rainbows'), 'Unicorns and rainbows');
+	assert.equal(humanizeString('-UnicornsAndRainbows'), 'Unicorns and rainbows');
+	assert.equal(humanizeString('  unicorns  and  rainbows  '), 'Unicorns and rainbows');
+	assert.equal(humanizeString('unicorns_and-Rainbows_andPonies  '), 'Unicorns and rainbows and ponies');
 });
 
-test('preserveCase option', t => {
+test('throws on non-string input', () => {
+	assert.throws(() => {
+		humanizeString(1);
+	}, {message: 'Expected a string'});
+
+	assert.throws(() => {
+		humanizeString(undefined);
+	}, {message: 'Expected a string'});
+
+	assert.throws(() => {
+		humanizeString(null);
+	}, {message: 'Expected a string'});
+});
+
+test('preserveCase option keeps the original case', () => {
 	// Basic preserve case functionality
-	t.is(humanizeString('unicorns_and-Rainbows_andPonies', {preserveCase: true}), 'Unicorns and Rainbows andPonies');
-	t.is(humanizeString('The-NetApp-Guide-to-Kubernetes', {preserveCase: true}), 'The NetApp Guide to Kubernetes');
-	t.is(humanizeString('iPhone-App-Store', {preserveCase: true}), 'IPhone App Store');
-	t.is(humanizeString('XMLHttpRequest-API', {preserveCase: true}), 'XMLHttpRequest API');
+	assert.equal(humanizeString('unicorns_and-Rainbows_andPonies', {preserveCase: true}), 'Unicorns and Rainbows andPonies');
+	assert.equal(humanizeString('The-NetApp-Guide-to-Kubernetes', {preserveCase: true}), 'The NetApp Guide to Kubernetes');
+	assert.equal(humanizeString('iPhone-App-Store', {preserveCase: true}), 'IPhone App Store');
+	assert.equal(humanizeString('XMLHttpRequest-API', {preserveCase: true}), 'XMLHttpRequest API');
 
 	// Mixed separators with preserve case
-	t.is(humanizeString('foo_Bar-Baz', {preserveCase: true}), 'Foo Bar Baz');
-	t.is(humanizeString('FOO_BAR-baz', {preserveCase: true}), 'FOO BAR baz');
+	assert.equal(humanizeString('foo_Bar-Baz', {preserveCase: true}), 'Foo Bar Baz');
+	assert.equal(humanizeString('FOO_BAR-baz', {preserveCase: true}), 'FOO BAR baz');
 
 	// Edge cases with preserve case
-	t.is(humanizeString('', {preserveCase: true}), '');
-	t.is(humanizeString('singleword', {preserveCase: true}), 'Singleword');
-	t.is(humanizeString('ALLCAPS', {preserveCase: true}), 'ALLCAPS');
-	t.is(humanizeString('  spaced  words  ', {preserveCase: true}), 'Spaced words');
+	assert.equal(humanizeString('', {preserveCase: true}), '');
+	assert.equal(humanizeString('singleword', {preserveCase: true}), 'Singleword');
+	assert.equal(humanizeString('ALLCAPS', {preserveCase: true}), 'ALLCAPS');
+	assert.equal(humanizeString('  spaced  words  ', {preserveCase: true}), 'Spaced words');
 
 	// Multiple dashes/underscores with preserve case
-	t.is(humanizeString('foo--bar__baz', {preserveCase: true}), 'Foo bar baz');
-	t.is(humanizeString('prefix-_-suffix', {preserveCase: true}), 'Prefix suffix');
+	assert.equal(humanizeString('foo--bar__baz', {preserveCase: true}), 'Foo bar baz');
+	assert.equal(humanizeString('prefix-_-suffix', {preserveCase: true}), 'Prefix suffix');
 
 	// Leading dashes/underscores with preserve case
-	t.is(humanizeString('-Leading-Dash', {preserveCase: true}), 'Leading Dash');
-	t.is(humanizeString('_Leading_Underscore', {preserveCase: true}), 'Leading Underscore');
+	assert.equal(humanizeString('-Leading-Dash', {preserveCase: true}), 'Leading Dash');
+	assert.equal(humanizeString('_Leading_Underscore', {preserveCase: true}), 'Leading Underscore');
 });
 
-test('uppercase a first letter outside the basic multilingual plane', t => {
+test('preserveCase false is the same as omitting the option', () => {
+	assert.equal(humanizeString('unicorns_and-Rainbows', {preserveCase: false}), 'Unicorns and rainbows');
+	assert.equal(humanizeString('The-NetApp-Guide-to-Kubernetes', {preserveCase: false}), 'The net app guide to kubernetes');
+	assert.equal(humanizeString('The-NetApp-Guide-to-Kubernetes', {}), 'The net app guide to kubernetes');
+});
+
+test('uppercase a first letter outside the basic multilingual plane', () => {
 	// `charAt()` splits surrogate pairs, so a non-BMP first letter was never uppercased.
-	t.is(humanizeString('\u{10428}'), '\u{10400}'); // Deseret
-	t.is(humanizeString('\u{1E922}'), '\u{1E900}'); // Adlam
-	t.is(humanizeString('\u{16E60}'), '\u{16E40}'); // Medefaidrin
-	t.is(humanizeString('\u{118D0}'), '\u{118B0}'); // Warang Citi
-	t.is(humanizeString('\u{10428}abc'), '\u{10400}abc');
+	// The expected code points are each the `\p{Lu}` counterpart of the input, verified against Unicode data.
+	assert.equal(humanizeString('\u{10428}'), '\u{10400}'); // Deseret
+	assert.equal(humanizeString('\u{1E922}'), '\u{1E900}'); // Adlam
+	assert.equal(humanizeString('\u{16E60}'), '\u{16E40}'); // Medefaidrin
+	assert.equal(humanizeString('\u{118D0}'), '\u{118B0}'); // Warang Citi
+	assert.equal(humanizeString('\u{10428}abc'), '\u{10400}abc');
 
 	// An already uppercase astral letter, and a non-letter first character, are left alone.
-	t.is(humanizeString('\u{10400}'), '\u{10400}');
-	t.is(humanizeString('😀hello'), '😀hello');
-	t.is(humanizeString('👨‍👩‍👧‍👦family'), '👨‍👩‍👧‍👦family');
+	assert.equal(humanizeString('\u{10400}'), '\u{10400}');
+	assert.equal(humanizeString('😀hello'), '😀hello');
+	assert.equal(humanizeString('👨‍👩‍👧‍👦family'), '👨‍👩‍👧‍👦family');
 });
