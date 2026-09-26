@@ -38,3 +38,17 @@ test('preserveCase option', t => {
 	t.is(humanizeString('-Leading-Dash', {preserveCase: true}), 'Leading Dash');
 	t.is(humanizeString('_Leading_Underscore', {preserveCase: true}), 'Leading Underscore');
 });
+
+test('uppercase a first letter outside the basic multilingual plane', t => {
+	// `charAt()` splits surrogate pairs, so a non-BMP first letter was never uppercased.
+	t.is(humanizeString('\u{10428}'), '\u{10400}'); // Deseret
+	t.is(humanizeString('\u{1E922}'), '\u{1E900}'); // Adlam
+	t.is(humanizeString('\u{16E60}'), '\u{16E40}'); // Medefaidrin
+	t.is(humanizeString('\u{118D0}'), '\u{118B0}'); // Warang Citi
+	t.is(humanizeString('\u{10428}abc'), '\u{10400}abc');
+
+	// An already uppercase astral letter, and a non-letter first character, are left alone.
+	t.is(humanizeString('\u{10400}'), '\u{10400}');
+	t.is(humanizeString('😀hello'), '😀hello');
+	t.is(humanizeString('👨‍👩‍👧‍👦family'), '👨‍👩‍👧‍👦family');
+});

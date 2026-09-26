@@ -11,7 +11,9 @@ export default function humanizeString(string, options = {}) {
 	}
 
 	string = string.replace(/[_-]+/g, ' ').replace(/\s{2,}/g, ' ').trim();
-	string = string.charAt(0).toUpperCase() + string.slice(1);
 
-	return string;
+	// Destructuring iterates code points, where `charAt()` would split a surrogate pair and leave the first letter unuppercased.
+	const [firstCharacter = '', ...rest] = string;
+
+	return firstCharacter.toUpperCase() + rest.join('');
 }
