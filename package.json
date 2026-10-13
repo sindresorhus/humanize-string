@@ -38,7 +38,7 @@
 		"convert"
 	],
 	"dependencies": {
-		"decamelize": "^6.0.1"
+		"decamelize": "^7.0.0"
 	},
 	"devDependencies": {
 		"xo": "^5.0.1"

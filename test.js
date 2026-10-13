@@ -142,3 +142,59 @@ test('does not uppercase a first Georgian Mkhedruli letter', () => {
 	// The older Nuskhuri script does have a titlecase, which is its uppercase (Asomtavruli).
 	assert.equal(humanizeString('\u{2D00}\u{2D01}'), '\u{10A0}\u{2D01}');
 });
+
+test('splits camel case words with decomposed accents', () => {
+	// Decomposed (NFD) text, common in macOS file names, puts a combining mark after the base letter, which hid the word boundary.
+	assert.equal(humanizeString('cafe\u{301}Menu'), 'Cafe\u{301} menu');
+	assert.equal(humanizeString('nai\u{308}veApproach'), 'Nai\u{308}ve approach');
+	assert.equal(humanizeString('pho\u{302}\u{301}Bar'), 'Pho\u{302}\u{301} bar'); // Several marks
+	assert.equal(humanizeString('XMLE\u{301}cole'), 'Xml e\u{301}cole');
+	assert.equal(humanizeString('A\u{30A}Bcd'), 'A\u{30A} bcd');
+	assert.equal(humanizeString('XA\u{30A}ngstro\u{308}m'), 'X a\u{30A}ngstro\u{308}m');
+	assert.equal(humanizeString('E\u{301}COLEName'), 'E\u{301}cole name');
+
+	// The same input in composed (NFC) and decomposed (NFD) form gives the same result.
+	const inputs = ['caféMenu', 'naïveApproach', 'XMLÉcole', 'ÅBcd', 'XÅngström', 'ÉCOLEName', 'überÄrger', 'ÀÉÎÕÜ', 'São_PauloÉCity'];
+	assert.deepEqual(inputs.map(input => humanizeString(input.normalize('NFD'))), inputs.map(input => humanizeString(input).normalize('NFD')));
+});
+
+test('keeps plural acronyms together', () => {
+	// The `s` of a plural acronym was taken as the start of a new word: `userIDs` → `User i ds`.
+	assert.equal(humanizeString('userIDs'), 'User ids');
+	assert.equal(humanizeString('getURLs'), 'Get urls');
+	assert.equal(humanizeString('listAPIs'), 'List apis');
+	assert.equal(humanizeString('IDs'), 'Ids');
+	assert.equal(humanizeString('getURLs-fromAPIs'), 'Get urls from apis');
+	assert.equal(humanizeString('user IDs list'), 'User ids list');
+	assert.equal(humanizeString('the_PDFs'), 'The pdfs');
+	assert.equal(humanizeString('PDFs-and-URLs'), 'Pdfs and urls');
+	assert.equal(humanizeString('allIDs2'), 'All i ds2'); // A digit continues the word, like in `mp3Player`
+	assert.equal(humanizeString('E\u{301}TATs'), 'E\u{301}tats'); // Decomposed accent
+	assert.equal(humanizeString('listCAFE\u{301}s'), 'List cafe\u{301}s'); // Decomposed accent on the last acronym letter
+	assert.equal(humanizeString('IDs\u{301}'), 'I ds\u{301}'); // A decomposed `ś` is not a plural `s`, the same as a composed one
+	assert.equal(humanizeString('ID\u{15B}'), 'I d\u{15B}');
+
+	// A capitalized word starting with `s` after an acronym is still split.
+	assert.equal(humanizeString('HTTPSServer'), 'Https server');
+	assert.equal(humanizeString('XMLSchema'), 'Xml schema');
+
+	// An `s` followed by more lowercase letters is not a plural, so the uppercase letter before it starts a new word.
+	assert.equal(humanizeString('APIsearch'), 'Ap isearch');
+	assert.equal(humanizeString('GPUsed'), 'Gp used');
+
+	// Before a capitalized word, `Is`, `As`, `Us`, and `Os` after an acronym are words, which is more common than a plural acronym there. A plural acronym is therefore only recognized at the end of a word.
+	assert.equal(humanizeString('userIDIsValid'), 'User id is valid');
+	assert.equal(humanizeString('fileURLIsDirectory'), 'File url is directory');
+	assert.equal(humanizeString('isCPUUsHigh'), 'Is cpu us high');
+	assert.equal(humanizeString('XMLIsValid'), 'Xml is valid');
+	assert.equal(humanizeString('USIsGood'), 'Us is good');
+	assert.equal(humanizeString('URLAsString'), 'Url as string');
+	assert.equal(humanizeString('userIDsList'), 'User i ds list');
+
+	// At the end of a word, a plural acronym is more common than a word: `exportPDFAs` is a known limitation.
+	assert.equal(humanizeString('exportPDFAs'), 'Export pdfas');
+
+	// A single uppercase letter followed by `s` is a word.
+	assert.equal(humanizeString('thisIs'), 'This is');
+	assert.equal(humanizeString('fooAs'), 'Foo as');
+});

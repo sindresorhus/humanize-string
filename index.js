@@ -19,7 +19,6 @@ export default function humanizeString(string, options = {}) {
 
 	if (!options.preserveCase) {
 		string = decamelize(string);
-		string = string.toLowerCase();
 	}
 
 	string = string.replaceAll(/[\s\-_]+/gv, ' ').trim();
