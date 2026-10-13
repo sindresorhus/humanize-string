@@ -198,3 +198,20 @@ test('keeps plural acronyms together', () => {
 	assert.equal(humanizeString('thisIs'), 'This is');
 	assert.equal(humanizeString('fooAs'), 'Foo as');
 });
+
+test('titlecases a first digraph letter', () => {
+	// The digraphs `ǆ`, `ǉ`, `ǌ`, and `ǳ` have a titlecase form that differs from their uppercase form.
+	assert.equal(humanizeString('\u{1C6}ungla'), '\u{1C5}ungla'); // `ǆungla` → `ǅungla`, not `Ǆungla`
+	assert.equal(humanizeString('\u{1C9}ubav'), '\u{1C8}ubav'); // `ǉ`
+	assert.equal(humanizeString('\u{1CC}ega'), '\u{1CB}ega'); // `ǌ`
+	assert.equal(humanizeString('\u{1F3}ar'), '\u{1F2}ar'); // `ǳ`
+	assert.equal(humanizeString('\u{1C4}UNGLA'), '\u{1C5}ungla'); // All-caps `Ǆ` is lowercased first
+	assert.equal(humanizeString('\u{1C5}ungla'), '\u{1C5}ungla');
+	assert.equal(humanizeString('\u{1C6}ungla', {preserveCase: true}), '\u{1C5}ungla');
+
+	// An already uppercase or titlecase letter is kept with `preserveCase`.
+	assert.equal(humanizeString('\u{1C4}UNGLA', {preserveCase: true}), '\u{1C4}UNGLA');
+	assert.equal(humanizeString('\u{1C5}ungla', {preserveCase: true}), '\u{1C5}ungla');
+	assert.equal(humanizeString('\u{1C8}ubav', {preserveCase: true}), '\u{1C8}ubav');
+	assert.equal(humanizeString('\u{1F88}', {preserveCase: true}), '\u{1F88}'); // Greek `ᾈ`
+});
