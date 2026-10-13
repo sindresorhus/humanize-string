@@ -74,3 +74,21 @@ test('uppercase a first letter outside the basic multilingual plane', () => {
 	assert.equal(humanizeString('😀hello'), '😀hello');
 	assert.equal(humanizeString('👨‍👩‍👧‍👦family'), '👨‍👩‍👧‍👦family');
 });
+
+test('normalizes any whitespace to a single space', () => {
+	// A single non-space whitespace character was kept, while two of them were collapsed to a space.
+	assert.equal(humanizeString('foo\tbar'), 'Foo bar');
+	assert.equal(humanizeString('foo\nbar'), 'Foo bar');
+	assert.equal(humanizeString('foo\r\nbar'), 'Foo bar');
+	assert.equal(humanizeString('foo\u{A0}bar'), 'Foo bar');
+	assert.equal(humanizeString('foo\u{3000}bar'), 'Foo bar');
+	assert.equal(humanizeString('foo\u{2028}bar'), 'Foo bar');
+	assert.equal(humanizeString('foo\tbar', {preserveCase: true}), 'Foo bar');
+	assert.equal(humanizeString('fooBar\tBaz', {preserveCase: true}), 'FooBar Baz');
+
+	// Whitespace mixed with separators.
+	assert.equal(humanizeString('foo\t-\tbar'), 'Foo bar');
+	assert.equal(humanizeString('foo_\nbar'), 'Foo bar');
+	assert.equal(humanizeString('\tfoo\n'), 'Foo');
+	assert.equal(humanizeString(' \t\n-_ '), '');
+});
