@@ -1,4 +1,6 @@
 import {test} from 'node:test';
+import process from 'node:process';
+import {spawnSync} from 'node:child_process';
 import assert from 'node:assert/strict';
 import humanizeString from './index.js';
 
@@ -91,4 +93,17 @@ test('normalizes any whitespace to a single space', () => {
 	assert.equal(humanizeString('foo_\nbar'), 'Foo bar');
 	assert.equal(humanizeString('\tfoo\n'), 'Foo');
 	assert.equal(humanizeString(' \t\n-_ '), '');
+});
+
+test('handles large input without running out of memory', () => {
+	// Splitting the string into an array of characters to uppercase the first one used several times more memory than the string itself.
+	const code = `
+		import humanizeString from ${JSON.stringify(import.meta.resolve('./index.js'))};
+		const input = 'a'.repeat(8_000_000);
+		console.log(humanizeString(input).length, humanizeString(input, {preserveCase: true}).length);
+	`;
+
+	const {status, stdout, stderr} = spawnSync(process.execPath, ['--max-old-space-size=64', '--input-type=module', '--eval', code], {encoding: 'utf8'});
+	assert.equal(status, 0, stderr.slice(0, 200));
+	assert.equal(stdout, '8000000 8000000\n');
 });

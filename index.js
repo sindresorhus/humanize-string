@@ -12,8 +12,6 @@ export default function humanizeString(string, options = {}) {
 
 	string = string.replaceAll(/[\s\-_]+/gv, ' ').trim();
 
-	// Destructuring iterates code points, where `charAt()` would split a surrogate pair and leave the first letter unuppercased.
-	const [firstCharacter = '', ...rest] = string;
-
-	return firstCharacter.toUpperCase() + rest.join('');
+	// The `v` flag makes `.` match a whole code point, where `charAt()` would split a surrogate pair and leave the first letter unuppercased. Spreading the string into an array of characters instead would use several times more memory than the string itself.
+	return string.replace(/^./sv, character => character.toUpperCase());
 }
