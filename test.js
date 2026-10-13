@@ -107,3 +107,23 @@ test('handles large input without running out of memory', () => {
 	assert.equal(status, 0, stderr.slice(0, 200));
 	assert.equal(stdout, '8000000 8000000\n');
 });
+
+test('titlecases a first letter that uppercases to several letters', () => {
+	// `toUpperCase()` expands these to several uppercase letters, but only the first one should be uppercase.
+	assert.equal(humanizeString('\u{FB01}le'), 'File'); // `ﬁ` ligature
+	assert.equal(humanizeString('\u{FB02}ower'), 'Flower'); // `ﬂ` ligature
+	assert.equal(humanizeString('\u{FB03}x'), 'Ffix'); // `ﬃ` ligature
+	assert.equal(humanizeString('\u{FB06}op'), 'Stop'); // `ﬆ` ligature
+	assert.equal(humanizeString('\u{DF}'), 'Ss'); // `ß`
+	assert.equal(humanizeString('\u{DF}-foo'), 'Ss foo');
+	assert.equal(humanizeString('\u{FB01}le-name', {preserveCase: true}), 'File name');
+	assert.equal(humanizeString('\u{FB13}'), '\u{544}\u{576}'); // Armenian `ﬓ` → `Մն`
+	assert.equal(humanizeString('\u{1FB3}'), '\u{391}\u{3B9}'); // Greek `ᾳ` → `Αι`, which is better than `ΑΙ`, but the Unicode titlecase is `ᾼ`. This is a known limitation.
+
+	// Only the first letter is affected.
+	assert.equal(humanizeString('a\u{FB01}'), 'A\u{FB01}');
+	assert.equal(humanizeString('stra\u{DF}e'), 'Stra\u{DF}e');
+
+	// Letters with a decomposed uppercase keep their combining marks.
+	assert.equal(humanizeString('\u{1F0}'), 'J\u{30C}'); // `ǰ`
+});
