@@ -109,6 +109,9 @@ test('normalizes a next line character to a space', () => {
 
 	// The byte order mark is not Unicode whitespace, but `\s` matches it, so it stays a separator.
 	assert.equal(humanizeString('foo\u{FEFF}bar'), 'Foo bar');
+	assert.equal(humanizeString('\u{FEFF}fooBar'), 'Foo bar'); // A leading byte order mark from a file
+	assert.equal(humanizeString('fooBar\u{85}baz'), 'Foo bar baz');
+	assert.equal(humanizeString('\u{85}\u{85}', {preserveCase: true}), '');
 });
 
 test('handles large input without running out of memory', () => {
@@ -116,7 +119,7 @@ test('handles large input without running out of memory', () => {
 	const code = `
 		import humanizeString from ${JSON.stringify(import.meta.resolve('./index.js'))};
 		const input = 'a'.repeat(8_000_000);
-		console.log(humanizeString(input).length, humanizeString(input, {preserveCase: true}).length);
+		process.stdout.write(\`\${humanizeString(input).length} \${humanizeString(input, {preserveCase: true}).length}\n\`);
 	`;
 
 	const {status, stdout, stderr} = spawnSync(process.execPath, ['--max-old-space-size=64', '--input-type=module', '--eval', code], {encoding: 'utf8'});
@@ -249,6 +252,15 @@ test('titlecases a first Greek letter with an iota subscript', () => {
 
 	// Only the first letter is titlecased.
 	assert.equal(humanizeString('\u{1FB3}\u{1FB3}'), '\u{1FBC}\u{1FB3}');
+	assert.equal(humanizeString('\u{1F80}\u{1F80}Bar'), '\u{1F88}\u{1F80} bar');
+
+	// All-caps text is lowercased first.
+	assert.equal(humanizeString('\u{1FA8}\u{394}\u{397}'), '\u{1FA8}\u{3B4}\u{3B7}'); // `ᾨΔΗ` → `ᾨδη`
+	assert.equal(humanizeString('\u{1FA8}\u{394}\u{397}', {preserveCase: true}), '\u{1FA8}\u{394}\u{397}');
+
+	// Decomposed (NFD) text has the iota subscript as a combining mark, which is kept after the uppercased base letter.
+	assert.equal(humanizeString('\u{3B1}\u{345}\u{3B4}\u{3C9}').normalize('NFC'), '\u{1FBC}\u{3B4}\u{3C9}'); // `ᾳδω` → `ᾼδω`
+	assert.equal(humanizeString('\u{3C9}\u{313}\u{345}\u{3B4}\u{3AE}').normalize('NFC'), '\u{1FA8}\u{3B4}\u{3AE}'); // `ᾠδή` → `ᾨδή`
 });
 
 test('titlecases every first letter that has a titlecase letter', () => {
@@ -264,4 +276,93 @@ test('titlecases every first letter that has a titlecase letter', () => {
 	assert.deepEqual(titlecaseLetters.map(letter => humanizeString(letter.toLowerCase())), titlecaseLetters);
 	assert.deepEqual(titlecaseLetters.map(letter => humanizeString(letter)), titlecaseLetters);
 	assert.deepEqual(titlecaseLetters.map(letter => humanizeString(`${letter.toLowerCase()}foo`)), titlecaseLetters.map(letter => `${letter}foo`));
+});
+
+test('splits camel case like decamelize', () => {
+	// The camel case splitting comes from the `decamelize` package.
+	assert.equal(humanizeString('A'), 'A');
+	assert.equal(humanizeString('a2b'), 'A2b');
+	assert.equal(humanizeString('A2B'), 'A2 b');
+	assert.equal(humanizeString('_A2B'), 'A2 b');
+	assert.equal(humanizeString('thisIsATest'), 'This is a test');
+	assert.equal(humanizeString('UNICORNS AND RAINBOWS'), 'Unicorns and rainbows');
+	assert.equal(humanizeString('myURLString'), 'My url string');
+	assert.equal(humanizeString('URLString'), 'Url string');
+	assert.equal(humanizeString('StringURL'), 'String url');
+	assert.equal(humanizeString('testGUILabel'), 'Test gui label');
+	assert.equal(humanizeString('CAPLOCKED1'), 'Caplocked1');
+	assert.equal(humanizeString('my_URL_string'), 'My url string');
+	assert.equal(humanizeString('thisHasSpecialCharactersLike\u{10C}and\u{160}'), 'This has special characters like \u{10D}and \u{161}');
+
+	// A lowercase letter run directly after an acronym is ambiguous, and is taken as part of the last uppercase letter.
+	assert.equal(humanizeString('myURLstring'), 'My ur lstring');
+});
+
+test('humanizes common identifier styles', () => {
+	assert.equal(humanizeString('IN_PROGRESS'), 'In progress');
+	assert.equal(humanizeString('NODE_ENV'), 'Node env');
+	assert.equal(humanizeString('created_at'), 'Created at');
+	assert.equal(humanizeString('createdAt'), 'Created at');
+	assert.equal(humanizeString('x-request-id'), 'X request id');
+	assert.equal(humanizeString('__typename'), 'Typename');
+	assert.equal(humanizeString('userId'), 'User id');
+	assert.equal(humanizeString('isHTML5Compatible'), 'Is html5 compatible');
+	assert.equal(humanizeString('Top10Movies'), 'Top10 movies');
+	assert.equal(humanizeString('getIDFromURL'), 'Get id from url');
+	assert.equal(humanizeString('Train-Case-String'), 'Train case string');
+	assert.equal(humanizeString('IN_PROGRESS', {preserveCase: true}), 'IN PROGRESS');
+});
+
+test('splits camel case in other scripts', () => {
+	assert.equal(humanizeString('\u{43F}\u{440}\u{438}\u{432}\u{435}\u{442}\u{41C}\u{438}\u{440}'), '\u{41F}\u{440}\u{438}\u{432}\u{435}\u{442} \u{43C}\u{438}\u{440}'); // `приветМир` → `Привет мир`
+	assert.equal(humanizeString('\u{10428}\u{10400}'), '\u{10400} \u{10428}'); // Deseret, outside the basic multilingual plane
+	assert.equal(humanizeString('\u{1E922}\u{1E900}\u{1E922}'), '\u{1E900} \u{1E922}\u{1E922}'); // Adlam
+
+	// A final sigma before a word boundary is lowercased to `ς`.
+	assert.equal(humanizeString('\u{39F}\u{394}\u{39F}\u{3A3}_\u{39F}\u{394}\u{39F}\u{3A3}'), '\u{39F}\u{3B4}\u{3BF}\u{3C2} \u{3BF}\u{3B4}\u{3BF}\u{3C2}');
+	assert.equal(humanizeString('\u{39F}\u{394}\u{39F}\u{3A3}Bar'), '\u{39F}\u{3B4}\u{3BF}\u{3C2} bar');
+});
+
+test('throws on non-string input of other types', () => {
+	assert.throws(() => {
+		humanizeString(new String('foo')); // eslint-disable-line no-new-wrappers, unicorn/new-for-builtins
+	}, {name: 'TypeError', message: 'Expected a string'});
+	assert.throws(() => {
+		humanizeString(Symbol('foo'));
+	}, {name: 'TypeError', message: 'Expected a string'});
+	assert.throws(() => {
+		humanizeString(['foo']);
+	}, {name: 'TypeError', message: 'Expected a string'});
+	assert.throws(() => {
+		humanizeString({});
+	}, {name: 'TypeError', message: 'Expected a string'});
+	assert.throws(() => {
+		humanizeString(true);
+	}, {name: 'TypeError', message: 'Expected a string'});
+	assert.throws(() => {
+		humanizeString(1n);
+	}, {name: 'TypeError', message: 'Expected a string'});
+});
+
+test('runs in linear time on adversarial input', () => {
+	const mark = '\u{301}';
+	const inputs = [
+		mark.repeat(100_000),
+		'a' + mark.repeat(100_000) + '!',
+		'A' + mark.repeat(100_000) + 'B' + mark.repeat(100_000) + '!',
+		('A' + mark).repeat(50_000),
+		('aB' + mark).repeat(30_000),
+		'A'.repeat(100_000) + '!',
+		'ABs'.repeat(30_000),
+		'-_ \t'.repeat(25_000) + 'a',
+	];
+
+	const start = performance.now();
+	for (const input of inputs) {
+		humanizeString(input);
+		humanizeString(input, {preserveCase: true});
+	}
+
+	// Quadratic behavior would take minutes.
+	assert.ok(performance.now() - start < 2000);
 });
