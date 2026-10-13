@@ -127,3 +127,18 @@ test('titlecases a first letter that uppercases to several letters', () => {
 	// Letters with a decomposed uppercase keep their combining marks.
 	assert.equal(humanizeString('\u{1F0}'), 'J\u{30C}'); // `ǰ`
 });
+
+test('does not uppercase a first Georgian Mkhedruli letter', () => {
+	// Georgian has no titlecase. Its uppercase letters (Mtavruli) are only used for all-caps text, so `toUpperCase()` turned `გამარჯობა` into `Გამარჯობა`.
+	assert.equal(humanizeString('\u{10D2}\u{10D0}\u{10DB}\u{10D0}\u{10E0}\u{10EF}\u{10DD}\u{10D1}\u{10D0}'), '\u{10D2}\u{10D0}\u{10DB}\u{10D0}\u{10E0}\u{10EF}\u{10DD}\u{10D1}\u{10D0}');
+	assert.equal(humanizeString('\u{10D0}-\u{10D1}'), '\u{10D0} \u{10D1}');
+	assert.equal(humanizeString('\u{10D0}', {preserveCase: true}), '\u{10D0}');
+	assert.equal(humanizeString('\u{10FF}'), '\u{10FF}'); // Last Mkhedruli letter
+
+	// All-caps Mtavruli is lowercased to Mkhedruli, or kept with `preserveCase`.
+	assert.equal(humanizeString('\u{1C92}\u{1C90}'), '\u{10D2}\u{10D0}');
+	assert.equal(humanizeString('\u{1C92}\u{1C90}', {preserveCase: true}), '\u{1C92}\u{1C90}');
+
+	// The older Nuskhuri script does have a titlecase, which is its uppercase (Asomtavruli).
+	assert.equal(humanizeString('\u{2D00}\u{2D01}'), '\u{10A0}\u{2D01}');
+});

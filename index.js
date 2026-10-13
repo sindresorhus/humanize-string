@@ -2,6 +2,11 @@ import decamelize from 'decamelize';
 
 // Uppercase a character as the first letter of a word.
 function titlecase(character) {
+	// Georgian Mkhedruli has no titlecase. Its uppercase (Mtavruli) is only used for all-caps text.
+	if (/^[\u{10D0}-\u{10FF}]$/v.test(character)) {
+		return character;
+	}
+
 	// Some characters, like `ß` and `ﬁ`, uppercase to several letters, of which only the first should be uppercase: `ﬁle` → `File`, not `FIle`.
 	const [first, ...rest] = character.toUpperCase();
 	return first + rest.join('').toLowerCase();
