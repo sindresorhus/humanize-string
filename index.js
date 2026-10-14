@@ -1,5 +1,8 @@
 import decamelize from 'decamelize';
 
+// These lowercase letters have a titlecase letter that differs from their uppercase: `ǆ` → `ǅ`, not `Ǆ`, and Greek `ᾳ` → `ᾼ`, not `ΑΙ`. These are all the titlecase letters in Unicode.
+const titlecaseLetters = new Map([...'ǅǈǋǲᾈᾉᾊᾋᾌᾍᾎᾏᾘᾙᾚᾛᾜᾝᾞᾟᾨᾩᾪᾫᾬᾭᾮᾯᾼῌῼ'].map(letter => [letter.toLowerCase(), letter]));
+
 // Uppercase a character as the first letter of a word.
 function titlecase(character) {
 	// A titlecase letter, like `ǅ`, is already right, and Georgian Mkhedruli has no titlecase. Its uppercase (Mtavruli) is only used for all-caps text.
@@ -7,9 +10,8 @@ function titlecase(character) {
 		return character;
 	}
 
-	// The lowercase digraphs have a titlecase letter that differs from their uppercase one: `ǆ` → `ǅ`, not `Ǆ`. It is the code point before the lowercase one.
-	if (/^[ǆǉǌǳ]$/v.test(character)) {
-		return String.fromCodePoint(character.codePointAt(0) - 1);
+	if (titlecaseLetters.has(character)) {
+		return titlecaseLetters.get(character);
 	}
 
 	// Some characters, like `ß` and `ﬁ`, uppercase to several letters, of which only the first should be uppercase: `ﬁle` → `File`, not `FIle`.

@@ -134,7 +134,7 @@ test('titlecases a first letter that uppercases to several letters', () => {
 	assert.equal(humanizeString('\u{DF}-foo'), 'Ss foo');
 	assert.equal(humanizeString('\u{FB01}le-name', {preserveCase: true}), 'File name');
 	assert.equal(humanizeString('\u{FB13}'), '\u{544}\u{576}'); // Armenian `ﬓ` → `Մն`
-	assert.equal(humanizeString('\u{1FB3}'), '\u{391}\u{3B9}'); // Greek `ᾳ` → `Αι`, which is better than `ΑΙ`, but the Unicode titlecase is `ᾼ`. This is a known limitation.
+	assert.equal(humanizeString('\u{1FB2}'), '\u{1FBA}\u{3B9}'); // Greek `ᾲ` → `Ὰι`, which is better than `ᾺΙ`, but the Unicode titlecase is `Ὰ` with a combining iota subscript, as there is no precomposed titlecase letter for it. This is a known limitation.
 
 	// Only the first letter is affected.
 	assert.equal(humanizeString('a\u{FB01}'), 'A\u{FB01}');
@@ -230,4 +230,38 @@ test('titlecases a first digraph letter', () => {
 	assert.equal(humanizeString('\u{1C5}ungla', {preserveCase: true}), '\u{1C5}ungla');
 	assert.equal(humanizeString('\u{1C8}ubav', {preserveCase: true}), '\u{1C8}ubav');
 	assert.equal(humanizeString('\u{1F88}', {preserveCase: true}), '\u{1F88}'); // Greek `ᾈ`
+});
+
+test('titlecases a first Greek letter with an iota subscript', () => {
+	// `toUpperCase()` turns the iota subscript into a separate capital iota, but the titlecase letter keeps it as a subscript.
+	assert.equal(humanizeString('\u{1FA0}\u{3B4}\u{3AE}'), '\u{1FA8}\u{3B4}\u{3AE}'); // `ᾠδή` → `ᾨδή`, not `Ὠιδή`
+	assert.equal(humanizeString('\u{1F84}\u{3B4}\u{3C9}'), '\u{1F8C}\u{3B4}\u{3C9}'); // `ᾄδω` → `ᾌδω`
+	assert.equal(humanizeString('\u{1FB3}'), '\u{1FBC}'); // `ᾳ` → `ᾼ`
+	assert.equal(humanizeString('\u{1FC3}'), '\u{1FCC}'); // `ῃ` → `ῌ`
+	assert.equal(humanizeString('\u{1FF3}'), '\u{1FFC}'); // `ῳ` → `ῼ`
+	assert.equal(humanizeString('\u{1F80}-foo'), '\u{1F88} foo'); // `ᾀ` → `ᾈ`
+	assert.equal(humanizeString('\u{1F80}', {preserveCase: true}), '\u{1F88}');
+
+	// An already titlecase letter was lowercased by decamelize, and then uppercased to two letters.
+	assert.equal(humanizeString('\u{1FA8}\u{3B4}\u{3AE}'), '\u{1FA8}\u{3B4}\u{3AE}'); // `ᾨδή`
+	assert.equal(humanizeString('\u{1F8D}\u{3B4}\u{3B7}\u{3C2}'), '\u{1F8D}\u{3B4}\u{3B7}\u{3C2}'); // `ᾍδης`
+	assert.equal(humanizeString('\u{1FBC}'), '\u{1FBC}'); // `ᾼ`
+
+	// Only the first letter is titlecased.
+	assert.equal(humanizeString('\u{1FB3}\u{1FB3}'), '\u{1FBC}\u{1FB3}');
+});
+
+test('titlecases every first letter that has a titlecase letter', () => {
+	const titlecaseLetters = [];
+	for (let codePoint = 0; codePoint <= 0x10_FF_FF; codePoint++) {
+		const character = String.fromCodePoint(codePoint);
+		if (/^\p{Titlecase_Letter}$/v.test(character)) {
+			titlecaseLetters.push(character);
+		}
+	}
+
+	assert.equal(titlecaseLetters.length, 31);
+	assert.deepEqual(titlecaseLetters.map(letter => humanizeString(letter.toLowerCase())), titlecaseLetters);
+	assert.deepEqual(titlecaseLetters.map(letter => humanizeString(letter)), titlecaseLetters);
+	assert.deepEqual(titlecaseLetters.map(letter => humanizeString(`${letter.toLowerCase()}foo`)), titlecaseLetters.map(letter => `${letter}foo`));
 });
