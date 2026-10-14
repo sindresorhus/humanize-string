@@ -26,7 +26,8 @@ export default function humanizeString(string, options = {}) {
 		string = decamelize(string);
 	}
 
-	string = string.replaceAll(/[\s\-_]+/gv, ' ').trim();
+	// `\s` misses U+0085 (next line), which is Unicode whitespace.
+	string = string.replaceAll(/[\s\p{White_Space}\-_]+/gv, ' ').trim();
 
 	// The `v` flag makes `.` match a whole code point, where `charAt()` would split a surrogate pair and leave the first letter unuppercased. Spreading the string into an array of characters instead would use several times more memory than the string itself.
 	return string.replace(/^./sv, character => titlecase(character));

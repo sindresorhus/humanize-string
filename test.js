@@ -95,6 +95,22 @@ test('normalizes any whitespace to a single space', () => {
 	assert.equal(humanizeString(' \t\n-_ '), '');
 });
 
+test('normalizes a next line character to a space', () => {
+	// U+0085 (next line) is Unicode whitespace, but `\s` and `trim()` do not match it. It is common in text decoded as Latin-1 instead of Windows-1252.
+	assert.equal(humanizeString('foo\u{85}bar'), 'Foo bar');
+	assert.equal(humanizeString('foo\u{85}\u{85}bar'), 'Foo bar');
+	assert.equal(humanizeString('foo\u{85}-\u{85}bar'), 'Foo bar');
+	assert.equal(humanizeString('fooBar\u{85}Baz', {preserveCase: true}), 'FooBar Baz');
+
+	// A leading one stopped the first letter from being uppercased.
+	assert.equal(humanizeString('\u{85}foo\u{85}'), 'Foo');
+	assert.equal(humanizeString('\u{85}foo', {preserveCase: true}), 'Foo');
+	assert.equal(humanizeString('\u{85}'), '');
+
+	// The byte order mark is not Unicode whitespace, but `\s` matches it, so it stays a separator.
+	assert.equal(humanizeString('foo\u{FEFF}bar'), 'Foo bar');
+});
+
 test('handles large input without running out of memory', () => {
 	// Splitting the string into an array of characters to uppercase the first one used several times more memory than the string itself.
 	const code = `
